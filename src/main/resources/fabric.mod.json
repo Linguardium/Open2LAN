@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "open2lan",
+  "version": "${version}",
+  "name": "Open To Lan",
+  "description": "Change settings on Open to LAN screen",
+  "authors": [
+    "Linguardium"
+  ],
+  "contributors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/open2lan/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "mod.linguardium.open2lan.Main"
+    ],
+    "client": [],
+    "server": []
+  },
+  "mixins": [
+    "open2lan.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.4.0",
+    "fabric": "*"
+  }
+}
