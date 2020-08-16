@@ -1,5 +1,6 @@
 package mod.linguardium.open2lan.mixin;
 
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.OpenToLanScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -27,12 +29,12 @@ public abstract class OpenToLanMixin  extends Screen {
 
     private boolean online_mode = true;
     private ButtonWidget buttonOnlineMode;
-    private Integer port = 25564;
+    private Integer port = 25565;
     private TextFieldWidget portField;
     private int portTextColor = 0xFFFFFF;
 
     @Shadow
-    abstract void updateButtonText();
+    protected abstract void updateButtonText();
 
     @Inject(at=@At("HEAD"),method="init")
     private void addMyButtons(CallbackInfo ci) {
@@ -53,7 +55,7 @@ public abstract class OpenToLanMixin  extends Screen {
                port = i;
                portTextColor = 0xFFFFFF;
            }else{
-               port = 25564;
+               port = 25565;
                portTextColor = 0xFF0000;
            }
 
@@ -67,15 +69,15 @@ public abstract class OpenToLanMixin  extends Screen {
     @Inject(at=@At(value="INVOKE",target="Lnet/minecraft/client/gui/screen/Screen;render(Lnet/minecraft/client/util/math/MatrixStack;IIF)V"),method="render")
     private void addPortLabel(MatrixStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         Text selectPortText = new TranslatableText("lanServer.selectPort");
-        this.drawCenteredText(matrices, this.textRenderer, selectPortText, this.width / 2-155+(this.textRenderer.getWidth(selectPortText)/2), 135, 16777215);
+        drawCenteredText(matrices, this.textRenderer, selectPortText, this.width / 2-155+(this.textRenderer.getWidth(selectPortText)/2), 135, 16777215);
         portField.render(matrices,mouseX,mouseY,delta);
     }
-    @Redirect(at=@At(value="INVOKE",target="Lnet/minecraft/client/util/NetworkUtils;findLocalPort()I"),method="method_19851(Lnet/minecraft/client/gui/widget/ButtonWidget;)V")
-    private int getPortValue() {
+    @ModifyVariable(at=@At(value="INVOKE",target="Lnet/minecraft/server/integrated/IntegratedServer;openToLan(Lnet/minecraft/world/GameMode;ZI)Z"),method="method_19851(Lnet/minecraft/client/gui/widget/ButtonWidget;)V",name="i")
+    private int getPortValue(int i) {
         if (port > 0 && port < 65536) {
             return port;
         }
-        return NetworkUtils.findLocalPort();
+        return i;
     }
     // the first translatable text in bytecode is inside the successful establishment of the server.
     @Inject(at=@At(value="INVOKE",target="Lnet/minecraft/server/integrated/IntegratedServer;openToLan(Lnet/minecraft/world/GameMode;ZI)Z", ordinal=0),method="method_19851(Lnet/minecraft/client/gui/widget/ButtonWidget;)V")
