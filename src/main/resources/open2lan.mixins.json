@@ -1,9 +1,14 @@
 {
   "required": true,
   "package": "mod.linguardium.open2lan.mixin",
-  "compatibilityLevel": "JAVA_8",
-  "mixins": [],
-  "client": ["OpenToLanMixin"],
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [
+    "PublishCommandMixin",
+    "ServerLoginNetworkHandlerMixin"
+  ],
+  "client": [
+    "OpenToLanMixin"
+  ],
   "server": [],
   "injectors": {
     "defaultRequire": 1

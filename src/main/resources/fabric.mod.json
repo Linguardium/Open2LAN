@@ -3,9 +3,10 @@
   "id": "open2lan",
   "version": "${version}",
   "name": "Open To Lan",
-  "description": "Change settings on Open to LAN screen",
+  "description": "Change settings on Open to LAN screen and /publish command",
   "authors": [
-    "Linguardium"
+    "Linguardium",
+    "BisUmTo"
   ],
   "contributors": [],
   "contact": {},
@@ -23,7 +24,6 @@
     "open2lan.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.4.0",
-    "fabric": "*"
+    "fabricloader": ">=0.4.0"
   }
 }
