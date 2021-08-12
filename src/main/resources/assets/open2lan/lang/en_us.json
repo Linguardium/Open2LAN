@@ -1,4 +1,8 @@
 {
-  "lanServer.onlineMode": "Online Mode:",
-  "lanServer.selectPort": "Server Port"
+  "menu.lanServerProperties": "LAN Config",
+  "lanServerProperties.title": "LAN Server Configuration",
+  "lanServerProperties.maxPlayers": "Max Players",
+  "lanServerProperties.onlineMode": "Online Mode",
+  "lanServerProperties.pvpEnabled": "PVP Enabled",
+  "lanServerProperties.selectPort": "Server Port"
 }

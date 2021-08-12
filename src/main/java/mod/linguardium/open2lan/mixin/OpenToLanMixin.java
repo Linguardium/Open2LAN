@@ -29,13 +29,13 @@ public abstract class OpenToLanMixin extends Screen {
 
     @Inject(at = @At("HEAD"), method = "init")
     private void addMyButtons(CallbackInfo ci) {
-        this.buttonOnlineMode = this.addDrawableChild(new ButtonWidget(this.width / 2 + 5, 150, 150, 20, new TranslatableText("lanServer.onlineMode"), (buttonWidget) -> {
+        this.buttonOnlineMode = this.addDrawableChild(new ButtonWidget(this.width / 2 + 5, 150, 150, 20, new TranslatableText("lanServerProperties.onlineMode").append(":"), (buttonWidget) -> {
             online_mode = !online_mode;
-            this.buttonOnlineMode.setMessage((new TranslatableText("lanServer.onlineMode")).append(" ").append(ScreenTexts.onOrOff(this.online_mode)));
+            this.buttonOnlineMode.setMessage((new TranslatableText("lanServerProperties.onlineMode")).append(": ").append(ScreenTexts.onOrOff(this.online_mode)));
         }));
-        this.buttonOnlineMode.setMessage((new TranslatableText("lanServer.onlineMode")).append(" ").append(ScreenTexts.onOrOff(this.online_mode)));
+        this.buttonOnlineMode.setMessage((new TranslatableText("lanServerProperties.onlineMode")).append(": ").append(ScreenTexts.onOrOff(this.online_mode)));
 
-        this.portField = new TextFieldWidget(this.client.textRenderer, this.width / 2 - 155, 150, 150, 20, new TranslatableText("lanServer.selectPort"));
+        this.portField = new TextFieldWidget(this.client.textRenderer, this.width / 2 - 155, 150, 150, 20, new TranslatableText("lanServerProperties.selectPort"));
         this.portField.setText(Integer.toString(port));
         this.addDrawableChild(portField);
 
@@ -58,7 +58,7 @@ public abstract class OpenToLanMixin extends Screen {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;render(Lnet/minecraft/client/util/math/MatrixStack;IIF)V"), method = "render")
     private void addPortLabel(MatrixStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        Text selectPortText = new TranslatableText("lanServer.selectPort");
+        Text selectPortText = new TranslatableText("lanServerProperties.selectPort");
         drawCenteredText(matrices, this.textRenderer, selectPortText, this.width / 2 - 155 + (this.textRenderer.getWidth(selectPortText) / 2), 135, 16777215);
         portField.render(matrices, mouseX, mouseY, delta);
     }

@@ -15,7 +15,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "mod.linguardium.open2lan.Main"
+      "mod.linguardium.open2lan.Open2Lan"
     ],
     "client": [],
     "server": []
@@ -24,6 +24,8 @@
     "open2lan.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.4.0"
+    "fabricloader": ">=0.4.0",
+    "java": ">=16",
+    "cloth-config2": "5.0.x"
   }
 }

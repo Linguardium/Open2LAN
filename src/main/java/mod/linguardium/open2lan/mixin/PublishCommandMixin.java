@@ -59,10 +59,10 @@ public class PublishCommandMixin {
     }
 
     private static int execute(ServerCommandSource source, int port, boolean allowCheats, boolean forceOfflineMode) throws CommandSyntaxException {
-        if (source.getMinecraftServer().isRemote()) {
-            throw ALREADY_PUBLISHED_EXCEPTION.create(source.getMinecraftServer().getServerPort());
-        } else if (!source.getMinecraftServer().openToLan(source.getMinecraftServer().getDefaultGameMode(), allowCheats, port)) {
-            if (forceOfflineMode) source.getMinecraftServer().setOnlineMode(false);
+        if (source.getServer().isRemote()) {
+            throw ALREADY_PUBLISHED_EXCEPTION.create(source.getServer().getServerPort());
+        } else if (!source.getServer().openToLan(source.getServer().getDefaultGameMode(), allowCheats, port)) {
+            if (forceOfflineMode) source.getServer().setOnlineMode(false);
             throw FAILED_EXCEPTION.create();
         } else {
             source.sendFeedback(new TranslatableText("commands.publish.success", port), true);

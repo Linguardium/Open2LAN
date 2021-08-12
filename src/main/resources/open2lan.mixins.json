@@ -3,13 +3,19 @@
   "package": "mod.linguardium.open2lan.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "PublishCommandMixin",
+    "IntegratedServerAccessor",
+    "PlayerEntityMixin",
+    "PlayerManagerAccessor",
     "ServerLoginNetworkHandlerMixin"
   ],
   "client": [
-    "OpenToLanMixin"
+    "GameMenuScreenMixin",
+    "OpenToLanMixin",
+    "PublishCommandMixin",
+    "ServerLoginNetworkHandlerThreadMixin"
   ],
-  "server": [],
+  "server": [
+  ],
   "injectors": {
     "defaultRequire": 1
   }
