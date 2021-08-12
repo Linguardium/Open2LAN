@@ -1,5 +1,6 @@
 package mod.linguardium.open2lan;
 
+import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
@@ -46,6 +47,12 @@ public class LanServerPropertiesScreen {
                 })
                 .build()
         );
+
+        AbstractConfigListEntry<String> port = entryBuilder.startStrField(new TranslatableText("lanServerProperties.selectPort"), Integer.toString(server.getServerPort()))
+                .setTooltip(new TranslatableText("lanServerProperties.cannotChange"))
+                .build();
+        port.setEditable(false);
+        lanServerProperties.addEntry(port);
 
         lanServerProperties.addEntry(entryBuilder.startBooleanToggle(new TranslatableText("lanServerProperties.onlineMode"), server.isOnlineMode())
                 .setDefaultValue(true)
