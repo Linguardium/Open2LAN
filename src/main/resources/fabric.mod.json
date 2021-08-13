@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "id": "open2lan",
   "version": "${version}",
-  "name": "Open To Lan",
+  "name": "Open2LAN",
   "description": "Change settings on Open to LAN screen and /publish command",
   "authors": [
-    "Linguardium",
-    "BisUmTo"
+    "BisUmTo",
+    "Linguardium"
   ],
   "contributors": [],
   "contact": {},
@@ -25,7 +25,6 @@
   ],
   "depends": {
     "fabricloader": ">=0.4.0",
-    "java": ">=16",
-    "cloth-config2": "5.0.x"
+    "java": ">=16"
   }
 }

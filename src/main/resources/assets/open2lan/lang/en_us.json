@@ -1,8 +1,10 @@
 {
-  "menu.lanServerProperties": "LAN Config",
-  "lanServerProperties.title": "LAN Server Configuration",
-  "lanServerProperties.maxPlayers": "Max Players",
-  "lanServerProperties.onlineMode": "Online Mode",
-  "lanServerProperties.pvpEnabled": "PVP Enabled",
-  "lanServerProperties.selectPort": "Server Port"
+  "menu.lanConfig": "LAN Config",
+  "lanServer.configTitle": "LAN Server Configuration",
+  "lanServer.maxPlayers": "Max Players",
+  "lanServer.onlineMode": "Online Mode",
+  "lanServer.pvpEnabled": "PVP Enabled",
+  "lanServer.selectPort": "Server Port",
+  "lanServer.configSaved": "LAN Server Configuration saved",
+  "lanServer.cannotChange": "You cannot change this value while the server is running"
 }

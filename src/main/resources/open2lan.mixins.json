@@ -4,13 +4,11 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "IntegratedServerAccessor",
-    "PlayerEntityMixin",
     "PlayerManagerAccessor",
     "ServerLoginNetworkHandlerMixin"
   ],
   "client": [
     "GameMenuScreenMixin",
-    "OpenToLanMixin",
     "PublishCommandMixin",
     "ServerLoginNetworkHandlerThreadMixin"
   ],
