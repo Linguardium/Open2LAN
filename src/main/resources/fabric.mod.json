@@ -2,9 +2,10 @@
   "schemaVersion": 1,
   "id": "open2lan",
   "version": "${version}",
-  "name": "Open To Lan",
-  "description": "Change settings on Open to LAN screen",
+  "name": "Open2LAN",
+  "description": "Change settings on Open to LAN screen and /publish command",
   "authors": [
+    "BisUmTo",
     "Linguardium"
   ],
   "contributors": [],
@@ -14,7 +15,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "mod.linguardium.open2lan.Main"
+      "mod.linguardium.open2lan.Open2Lan"
     ],
     "client": [],
     "server": []
@@ -24,6 +25,6 @@
   ],
   "depends": {
     "fabricloader": ">=0.4.0",
-    "fabric": "*"
+    "java": ">=16"
   }
 }

@@ -1,4 +1,10 @@
 {
-  "lanServer.onlineMode": "Online Mode:",
-  "lanServer.selectPort": "Server Port"
+  "menu.lanConfig": "LAN Config",
+  "lanServer.configTitle": "LAN Server Configuration",
+  "lanServer.maxPlayers": "Max Players",
+  "lanServer.onlineMode": "Online Mode",
+  "lanServer.pvpEnabled": "PVP Enabled",
+  "lanServer.selectPort": "Server Port",
+  "lanServer.configSaved": "LAN Server Configuration saved",
+  "lanServer.cannotChange": "You cannot change this value while the server is running"
 }

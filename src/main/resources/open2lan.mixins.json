@@ -1,10 +1,19 @@
 {
   "required": true,
   "package": "mod.linguardium.open2lan.mixin",
-  "compatibilityLevel": "JAVA_8",
-  "mixins": [],
-  "client": ["OpenToLanMixin"],
-  "server": [],
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [
+    "IntegratedServerAccessor",
+    "PlayerManagerAccessor",
+    "ServerLoginNetworkHandlerMixin"
+  ],
+  "client": [
+    "GameMenuScreenMixin",
+    "PublishCommandMixin",
+    "ServerLoginNetworkHandlerThreadMixin"
+  ],
+  "server": [
+  ],
   "injectors": {
     "defaultRequire": 1
   }
