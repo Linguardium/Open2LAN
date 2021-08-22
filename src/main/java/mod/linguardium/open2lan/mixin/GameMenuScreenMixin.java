@@ -35,6 +35,6 @@ public class GameMenuScreenMixin extends Screen {
         if (client != null && client.isIntegratedServerRunning() && client.getServer().isRemote()) {
             lanServerButton.setMessage(LAN_CONFIG_TEXT);
         }
-        lanServerButton.active = this.client.isIntegratedServerRunning();
+        lanServerButton.active = client.isIntegratedServerRunning();
     }
 }
