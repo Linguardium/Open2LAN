@@ -2,14 +2,15 @@
 <p><br />This mod is heavily inspired by&nbsp;<a href="https://www.curseforge.com/minecraft/mc-mods/lan-server-properties">https://www.curseforge.com/minecraft/mc-mods/lan-server-properties&nbsp;</a></p>
 <p>&nbsp;</p>
 <h2>Open2LAN (for Fabric)</h2>
-<p><strong>Open2LAN</strong> allows you to personalize your LAN World settings!</p>
+<p><strong>Open2LAN</strong> allows you to personalize your LAN World settings! You can change this values even while the server is running!</p>
 <ul>
 <li>LAN World Port</li>
 <li>Max number of Players</li>
-<li>Online mode</li>
+<li>Online mode*</li>
 <li>Friendly fire (PVP)</li>
 </ul>
-<p>&nbsp;<img src="https://i.gyazo.com/0247edf688e9287874cb9f2b2f641c30.png" alt="" width="854" height="480" /></p>
+<p>&nbsp;</p>
+<p>* Authenticated players can join in OfflineMode servers with same playerdata as in OnlineMode.<br /><img src="https://i.gyazo.com/0247edf688e9287874cb9f2b2f641c30.png" alt="" width="854" height="480" /></p>
 <p>&nbsp;</p>
 <p><strong>Open2LAN</strong> allows you to add some parameters into the <span style="font-family: 'andale mono', monospace;">/publish</span> command!</p>
 <pre><span style="font-family: 'courier new', courier, monospace;">/publish [&lt;port&gt;]<br />/publish [allowCheats] [&lt;port&gt;]<br />/publish [offlineMode] [&lt;port&gt;|allowCheats]<br /></span></pre>
