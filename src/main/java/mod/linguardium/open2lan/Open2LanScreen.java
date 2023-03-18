@@ -5,29 +5,28 @@ import mod.linguardium.open2lan.mixin.IntegratedServerAccessor;
 import mod.linguardium.open2lan.mixin.PlayerManagerAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.CyclingButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.NetworkUtils;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.world.GameMode;
 
 public class Open2LanScreen extends Screen {
-    private static final Text ALLOW_COMMANDS_TEXT = new TranslatableText("selectWorld.allowCommands");
-    private static final Text GAME_MODE_TEXT = new TranslatableText("selectWorld.gameMode");
-    private static final Text MAX_PLAYERS_TEXT = new TranslatableText("lanServer.maxPlayers");
-    private static final Text ONLINE_MODE_TEXT = new TranslatableText("lanServer.onlineMode");
-    private static final Text ENABLE_PVP_TEXT = new TranslatableText("lanServer.pvpEnabled");
-    private static final Text OTHER_PLAYERS_TEXT = new TranslatableText("lanServer.otherPlayers");
-    private static final Text SELECT_PORT_TEXT = new TranslatableText("lanServer.selectPort");
-    private static final Text START_TEXT = new TranslatableText("lanServer.start");
-    private static final Text CONFIG_SAVED_TEXT = new TranslatableText("lanServer.configSaved");
-    private static final Text CONFIG_TITLE_TEXT = new TranslatableText("lanServer.configTitle");
+    private static final Text ALLOW_COMMANDS_TEXT = Text.translatable("selectWorld.allowCommands");
+    private static final Text GAME_MODE_TEXT = Text.translatable("selectWorld.gameMode");
+    private static final Text MAX_PLAYERS_TEXT = Text.translatable("lanServer.maxPlayers");
+    private static final Text ONLINE_MODE_TEXT = Text.translatable("lanServer.onlineMode");
+    private static final Text ENABLE_PVP_TEXT = Text.translatable("lanServer.pvpEnabled");
+    private static final Text OTHER_PLAYERS_TEXT = Text.translatable("lanServer.otherPlayers");
+    private static final Text SELECT_PORT_TEXT = Text.translatable("lanServer.selectPort");
+    private static final Text START_TEXT = Text.translatable("lanServer.start");
+    private static final Text CONFIG_SAVED_TEXT = Text.translatable("lanServer.configSaved");
+    private static final Text CONFIG_TITLE_TEXT = Text.translatable("lanServer.configTitle");
 
     private final Screen parent;
     private MinecraftServer server;
@@ -55,7 +54,7 @@ public class Open2LanScreen extends Screen {
     private int maxPlayerTextColor;
 
     public Open2LanScreen(Screen parent, MinecraftClient client) {
-        super(new TranslatableText("lanServer.title"));
+        super(Text.translatable("lanServer.title"));
         this.parent = parent;
         this.client = client;
         this.server = client.getServer();
@@ -142,8 +141,9 @@ public class Open2LanScreen extends Screen {
         addDrawableChild(enablePvpButton);
 
         // DONE
-        doneButton = new ButtonWidget(width / 2 - 155, height / 4 + 104, 150, 20, START_TEXT, (button) -> {
-            if (client.isIntegratedServerRunning() && server.isRemote()) { // UPDATE
+        doneButton = ButtonWidget.builder(START_TEXT, button -> {
+            if (client.isIntegratedServerRunning() && server.isRemote()) { 
+                // UPDATE
                 this.client.setScreen(parent);
 
                 ((IntegratedServerAccessor) server).setForcedGameMode(gameMode);
@@ -153,26 +153,27 @@ public class Open2LanScreen extends Screen {
                     server.getCommandManager().sendCommandTree(serverPlayerEntity);
                 }
                 this.client.inGameHud.getChatHud().addMessage(CONFIG_SAVED_TEXT);
-            } else { // START
+            } else { 
+                // START
                 client.setScreen(null);
                 int i = lanPort > 0 && lanPort < 65536 ? lanPort : NetworkUtils.findLocalPort();
-                TranslatableText text2;
+                Text text2;
                 if (server.openToLan(this.gameMode, this.allowCommands, i))
-                    text2 = new TranslatableText("commands.publish.started", i);
+                    text2 = Text.translatable("commands.publish.started", i);
                 else
-                    text2 = new TranslatableText("commands.publish.failed");
+                    text2 = Text.translatable("commands.publish.failed");
                 this.client.inGameHud.getChatHud().addMessage(text2);
                 this.client.updateWindowTitle();
             }
             server.setOnlineMode(onlineMode);
             server.setPvpEnabled(enablePvp);
             ((PlayerManagerAccessor)server.getPlayerManager()).setMaxPlayers(maxPlayers);
-        });
+        }).dimensions(width / 2 - 155, height / 4 + 104, 150, 20).build();
+        
         this.addDrawableChild(doneButton);
 
         // CANCEL
-        cancelButton = new ButtonWidget(this.width / 2 + 5, height / 4 + 104, 150, 20, ScreenTexts.CANCEL, (button) -> this.client.setScreen(this.parent));
-        this.addDrawableChild(cancelButton);
+        this.addDrawableChild(ButtonWidget.builder(ScreenTexts.CANCEL, button -> this.client.setScreen(this.parent)).dimensions(this.width / 2 + 5, height / 4 + 104, 150, 20).build());
 
         // UPDATE PAGE
         if (client.isIntegratedServerRunning() && server.isRemote()) {
@@ -184,11 +185,11 @@ public class Open2LanScreen extends Screen {
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         renderBackground(matrices);
-        drawCenteredText(matrices, textRenderer, displayTitle, width / 2, Math.min(40, height / 4 - 30), 16777215);
-        drawCenteredText(matrices, textRenderer, OTHER_PLAYERS_TEXT, width / 2, Math.max(55, height / 4 - 5), 16777215);
-        drawCenteredText(matrices, this.textRenderer, SELECT_PORT_TEXT, width / 2 - 153 + (textRenderer.getWidth(SELECT_PORT_TEXT) / 2), height / 4 + 32, 16777215);
+        drawCenteredTextWithShadow(matrices, textRenderer, displayTitle, width / 2, Math.min(40, height / 4 - 30), 16777215);
+        drawCenteredTextWithShadow(matrices, textRenderer, OTHER_PLAYERS_TEXT, width / 2, Math.max(55, height / 4 - 5), 16777215);
+        drawCenteredTextWithShadow(matrices, this.textRenderer, SELECT_PORT_TEXT, width / 2 - 153 + (textRenderer.getWidth(SELECT_PORT_TEXT) / 2), height / 4 + 32, 16777215);
         portField.render(matrices, mouseX, mouseY, delta);
-        drawCenteredText(matrices, this.textRenderer, MAX_PLAYERS_TEXT, width / 2 + 7 + (textRenderer.getWidth(MAX_PLAYERS_TEXT) / 2), height / 4 + 32, 16777215);
+        drawCenteredTextWithShadow(matrices, this.textRenderer, MAX_PLAYERS_TEXT, width / 2 + 7 + (textRenderer.getWidth(MAX_PLAYERS_TEXT) / 2), height / 4 + 32, 16777215);
         maxPlayersField.render(matrices, mouseX, mouseY, delta);
         super.render(matrices, mouseX, mouseY, delta);
     }

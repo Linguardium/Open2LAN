@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "mod.linguardium.open2lan.mixin",
-  "compatibilityLevel": "JAVA_16",
+  "compatibilityLevel": "JAVA_17",
   "mixins": [
     "IntegratedServerAccessor",
     "PlayerManagerAccessor",
@@ -10,6 +10,7 @@
   "client": [
     "GameMenuScreenMixin",
     "PublishCommandMixin",
+    "GridWidgetAccessor",
     "ServerLoginNetworkHandlerThreadMixin"
   ],
   "server": [

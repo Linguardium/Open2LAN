@@ -9,7 +9,7 @@ import net.minecraft.client.util.NetworkUtils;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.PublishCommand;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -65,7 +65,7 @@ public class PublishCommandMixin {
             if (forceOfflineMode) source.getServer().setOnlineMode(false);
             throw FAILED_EXCEPTION.create();
         } else {
-            source.sendFeedback(new TranslatableText("commands.publish.success", port), true);
+            source.sendFeedback(Text.translatable("commands.publish.success", port), true);
             return port;
         }
     }

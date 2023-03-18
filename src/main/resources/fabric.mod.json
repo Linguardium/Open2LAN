@@ -25,6 +25,6 @@
   ],
   "depends": {
     "fabricloader": ">=0.4.0",
-    "java": ">=16"
+    "java": ">=17"
   }
 }
