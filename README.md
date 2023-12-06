@@ -2,7 +2,7 @@
 <p><br />This mod is heavily inspired by&nbsp;<a href="https://www.curseforge.com/minecraft/mc-mods/lan-server-properties">https://www.curseforge.com/minecraft/mc-mods/lan-server-properties&nbsp;</a></p>
 <p>&nbsp;</p>
 <h2>Open2LAN (for Fabric)</h2>
-<p><strong>Open2LAN</strong> allows you to personalize your LAN World settings! You can change this values even while the server is running!</p>
+<p><strong>Open2LAN</strong> allows you to personalize your LAN World settings! You can change settings even while the server is running!</p>
 <ul>
 <li>LAN World Port</li>
 <li>Max number of Players</li>
