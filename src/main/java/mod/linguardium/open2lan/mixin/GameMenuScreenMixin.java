@@ -1,60 +1,63 @@
 package mod.linguardium.open2lan.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import mod.linguardium.open2lan.Open2LanScreen;
-import net.minecraft.client.gui.screen.GameMenuScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.GridWidget;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.PauseScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Slice;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
-@Mixin(GameMenuScreen.class)
+@Mixin(PauseScreen.class)
 public class GameMenuScreenMixin extends Screen {
-    protected GameMenuScreenMixin(Text title) {
+    protected GameMenuScreenMixin(Component title) {
         super(title);
     }
 
-    @Shadow
-    private ButtonWidget createButton(Text text, Supplier<Screen> screenSupplier) {
-        return null;
-    }
+    @Unique
+    private static final Component OPEN_TO_LAN_TEXT = Component.translatable("menu.shareToLan");
+    @Unique
+    private static final Component LAN_CONFIG_TEXT = Component.translatable("menu.lanConfig");
 
-    ;
-    private static final Text OPEN_TO_LAN_TEXT = Text.translatable("menu.shareToLan");
-    private static final Text LAN_CONFIG_TEXT = Text.translatable("menu.lanConfig");
-
-    /* Redirect GridWidget.Adder.add method in slice from MinecraftClient.isIntegratedServerRunning method to MinecraftClient.isInSingleplayer method */
-    @Redirect(
-            method = "initWidgets",
+    /* find button creation between from MinecraftClient.isIntegratedServerRunning method to MinecraftClient.isInSingleplayer method */
+    @WrapOperation(
+            method = "createPauseMenu",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/widget/GridWidget$Adder;add(Lnet/minecraft/client/gui/widget/Widget;)Lnet/minecraft/client/gui/widget/Widget;"
+                    target = "Lnet/minecraft/client/gui/screens/PauseScreen;openScreenButton(Lnet/minecraft/network/chat/Component;Ljava/util/function/Supplier;)Lnet/minecraft/client/gui/components/Button;"
             ),
             slice = @Slice(
                     from = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/client/MinecraftClient;isIntegratedServerRunning()Z"
+                            target = "Lnet/minecraft/client/Minecraft;hasSingleplayerServer()Z"
                     ),
                     to = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/client/MinecraftClient;isInSingleplayer()Z"
+                            target = "Lnet/minecraft/client/Minecraft;isLocalServer()Z"
                     )
             )
     )
-    private Widget redirectAdderAdd(GridWidget.Adder adder, Widget oldButton) {
-        if (!client.isIntegratedServerRunning()) return adder.add(oldButton);
-
-        ButtonWidget button = createButton(OPEN_TO_LAN_TEXT, () -> new Open2LanScreen(this, client));
-        if (client != null && client.isIntegratedServerRunning() && client.getServer().isRemote()) {
-            button.setMessage(LAN_CONFIG_TEXT);
+    private Button substitudeOpen2LanButton(PauseScreen instance, Component component, Supplier<Screen> supplier, Operation<Button> buttonFactory) {
+        if (this.minecraft == null || !this.minecraft.hasSingleplayerServer()) return buttonFactory.call(instance, component, supplier);
+        Button openButton = buttonFactory.call(instance, OPEN_TO_LAN_TEXT,  (Supplier<Screen>)() -> new Open2LanScreen(this, this.minecraft));
+        boolean isServerRunning = Optional.ofNullable(this.minecraft)
+                .map(client-> {
+                    if (client.hasSingleplayerServer()) return client.getSingleplayerServer();
+                    return null;
+                })
+                .map(IntegratedServer::isPublished)
+                .orElse(false);
+        if (isServerRunning) {
+            openButton.setMessage(LAN_CONFIG_TEXT);
         }
-        return adder.add(button);
+        return openButton;
     }
 }

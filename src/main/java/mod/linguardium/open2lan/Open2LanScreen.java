@@ -2,195 +2,235 @@ package mod.linguardium.open2lan;
 
 
 import mod.linguardium.open2lan.mixin.IntegratedServerAccessor;
-import mod.linguardium.open2lan.mixin.PlayerManagerAccessor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.CyclingButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.util.NetworkUtils;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.screen.ScreenTexts;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.world.GameMode;
+import net.minecraft.world.level.GameType;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.event.Level;
+
+import java.util.Optional;
+
+import static mod.linguardium.open2lan.ServerSettingsUtil.*;
 
 public class Open2LanScreen extends Screen {
-    private static final Text ALLOW_COMMANDS_TEXT = Text.translatable("selectWorld.allowCommands");
-    private static final Text GAME_MODE_TEXT = Text.translatable("selectWorld.gameMode");
-    private static final Text MAX_PLAYERS_TEXT = Text.translatable("lanServer.maxPlayers");
-    private static final Text ONLINE_MODE_TEXT = Text.translatable("lanServer.onlineMode");
-    private static final Text ENABLE_PVP_TEXT = Text.translatable("lanServer.pvpEnabled");
-    private static final Text OTHER_PLAYERS_TEXT = Text.translatable("lanServer.otherPlayers");
-    private static final Text SELECT_PORT_TEXT = Text.translatable("lanServer.selectPort");
-    private static final Text START_TEXT = Text.translatable("lanServer.start");
-    private static final Text CONFIG_SAVED_TEXT = Text.translatable("lanServer.configSaved");
-    private static final Text CONFIG_TITLE_TEXT = Text.translatable("lanServer.configTitle");
+    private static final Component ALLOW_COMMANDS_TEXT = Component.translatable("selectWorld.allowCommands");
+    private static final Component GAME_MODE_TEXT = Component.translatable("selectWorld.gameMode");
+    private static final Component MAX_PLAYERS_TEXT = Component.translatable("lanServer.maxPlayers");
+    private static final Component ONLINE_MODE_TEXT = Component.translatable("lanServer.onlineMode");
+    private static final Component ENABLE_PVP_TEXT = Component.translatable("lanServer.pvpEnabled");
+    private static final Component OTHER_PLAYERS_TEXT = Component.translatable("lanServer.otherPlayers");
+    private static final Component SELECT_PORT_TEXT = Component.translatable("lanServer.selectPort");
+    private static final Component START_TEXT = Component.translatable("lanServer.start");
+    private static final Component CONFIG_SAVED_TEXT = Component.translatable("lanServer.configSaved");
+    private static final Component CONFIG_TITLE_TEXT = Component.translatable("lanServer.configTitle");
+    private static final Component UNABLE_TO_OPEN_TO_LAN = Component.translatable("commands.publish.failed");
+    private static final String OPEN_TO_LAN_SUCCESS_TRANSLATION_KEY = "commands.publish.started";
+
+    private static final int DEFAULT_PORT = 25565;
+
 
     private final Screen parent;
-    private MinecraftServer server;
-    private GameMode gameMode;
-    private boolean allowCommands;
-    private boolean onlineMode;
-    private boolean enablePvp;
-    private int lanPort;
-    private int maxPlayers;
+    private final IntegratedServer server;
+    private GameType gameMode = GameType.DEFAULT_MODE;
+    private boolean allowCommands = false;
+    private boolean onlineMode = true;
+    private boolean enablePvp = true;
+    private int lanPort = DEFAULT_PORT;
+    private int maxPlayers = 8;
 
-    // BUTTONS
-    private CyclingButtonWidget gamemodeButton;
-    private CyclingButtonWidget allowCommandsButton;
-    private CyclingButtonWidget onlineModeButton;
-    private CyclingButtonWidget enablePvpButton;
-    private TextFieldWidget portField;
-    private TextFieldWidget maxPlayersField;
-
-    private ButtonWidget doneButton;
-    private ButtonWidget cancelButton;
-
-    private Text displayTitle;
+    private Component displayTitle;
 
     private int portTextColor;
-    private int maxPlayerTextColor;
 
-    public Open2LanScreen(Screen parent, MinecraftClient client) {
-        super(Text.translatable("lanServer.title"));
+    public Open2LanScreen(Screen parent, @NotNull Minecraft client) {
+        super(Component.translatable("lanServer.title"));
         this.parent = parent;
-        this.client = client;
-        this.server = client.getServer();
+        this.minecraft = client;
+        this.server = client.getSingleplayerServer();
         this.displayTitle = getTitle();
-
-        if (client.isIntegratedServerRunning() && server.isRemote()) { // UPDATE
-            gameMode = server.getForcedGameMode();
-            allowCommands = server.getPlayerManager().areCheatsAllowed();
-            onlineMode = server.isOnlineMode();
-            enablePvp = server.isPvpEnabled();
-            lanPort = server.getServerPort();
-            maxPlayers = server.getMaxPlayerCount();
-        } else { // START
-            gameMode = server.getSaveProperties().getGameMode();
-            allowCommands = server.getSaveProperties().areCommandsAllowed();
-            onlineMode = true;
-            enablePvp = server.isPvpEnabled();
-            lanPort = 25565;
-            maxPlayers = 8;
+        if (server == null) {
+            Logging.log(Level.ERROR, "Open2Lan screen opened without single player running");
+            client.setScreen(parent);
+            return;
         }
+        gameMode = server.getWorldData().getGameType();
+        allowCommands = server.getWorldData().isAllowCommands();
+        enablePvp = server.isPvpAllowed();
+        copySettingsFromRunningServer(this.server);
     }
 
     protected void init() {
+        if (this.minecraft == null) return;
+        // TODO: extend existing screen?
+        StringWidget titleLabel = new StringWidget(displayTitle, this.font);
+        titleLabel.setPosition(width / 2 , Math.min(40, height / 4 - 30));
+        addRenderableWidget(titleLabel);
+
+        StringWidget otherPlayers = new StringWidget(OTHER_PLAYERS_TEXT, this.font);
+        otherPlayers.setPosition(width / 2 - (this.font.width(OTHER_PLAYERS_TEXT) / 2), Math.max(55, height / 4 - 5));
+        addRenderableWidget(otherPlayers);
+
+        StringWidget portLabel = new StringWidget(SELECT_PORT_TEXT, this.font);
+        portLabel.setPosition(width / 2 - 150 + (this.font.width(SELECT_PORT_TEXT) / 2), height / 4 + 32);
+        addRenderableWidget(portLabel);
+
+        StringWidget maxPlayersLabel = new StringWidget(MAX_PLAYERS_TEXT, this.font);
+        maxPlayersLabel.setPosition(width / 2 + 7 + (this.font.width(MAX_PLAYERS_TEXT) / 2), height / 4 + 32);
+        addRenderableWidget(maxPlayersLabel);
+
         // GAMEMODE
-        gamemodeButton = CyclingButtonWidget.builder(GameMode::getSimpleTranslatableName).values(GameMode.values()).initially(gameMode)
-                .build(width / 2 - 155, height / 4 + 8, 150, 20, GAME_MODE_TEXT, (button, gameMode) -> this.gameMode = gameMode);
-        addDrawableChild(gamemodeButton);
+        CycleButton<GameType> gamemodeButton = CycleButton.builder(GameType::getShortDisplayName).withValues(GameType.values()).withInitialValue(gameMode)
+                .create(width / 2 - 155, height / 4 + 8, 150, 20, GAME_MODE_TEXT, (button, gameMode) -> this.gameMode = gameMode);
+        addRenderableWidget(gamemodeButton);
 
         // ALLOW COMMANDS
-        allowCommandsButton = CyclingButtonWidget.onOffBuilder(allowCommands)
-                .build(this.width / 2 + 5, height / 4 + 8, 150, 20, ALLOW_COMMANDS_TEXT, (button, allowCommands) -> this.allowCommands = allowCommands);
-        addDrawableChild(allowCommandsButton);
+        CycleButton<Boolean> allowCommandsButton = CycleButton.onOffBuilder(allowCommands)
+                .create(this.width / 2 + 5, height / 4 + 8, 150, 20, ALLOW_COMMANDS_TEXT, (button, allowCommands) -> this.allowCommands = allowCommands);
+        addRenderableWidget(allowCommandsButton);
 
         // PORT
-        portField = new TextFieldWidget(client.textRenderer, width / 2 - 155 + 1, height / 4 + 45, 148, 20, SELECT_PORT_TEXT);
-        portField.setText(Integer.toString(lanPort));
+        EditBox portField = new EditBox(this.font, width / 2 - 155 + 1, height / 4 + 45, 148, 20, SELECT_PORT_TEXT);
+        portField.insertText(Integer.toString(lanPort));
         portField.setMaxLength(6);
-        portField.setChangedListener((sPort) -> {
+        portField.setResponder((sPort) -> {
+
+            if (sPort.isBlank()) {
+                this.lanPort=DEFAULT_PORT;
+                return;
+            }
             Integer i = null;
             try {
                 i = Integer.parseInt(sPort);
             } catch (NumberFormatException ignored) {
             }
-            if (i != null && i < 65536 && i > 0) {
+            if (validPort(i)) {
                 lanPort = i;
                 portTextColor = 0xFFFFFF;
             } else {
                 lanPort = 25565;
                 portTextColor = 0xFF0000;
             }
-            portField.setEditableColor(portTextColor);
+            portField.setTextColor(portTextColor);
         });
-        addDrawableChild(portField);
+        addRenderableWidget(portField);
 
         // MAX PLAYERS
-        maxPlayersField = new TextFieldWidget(client.textRenderer, width / 2 + 5 + 1, height / 4 + 45, 148, 20, MAX_PLAYERS_TEXT);
-        maxPlayersField.setText(Integer.toString(maxPlayers));
+        EditBox maxPlayersField = new EditBox(this.font, width / 2 + 5 + 1, height / 4 + 45, 148, 20, MAX_PLAYERS_TEXT);
+        maxPlayersField.insertText(Integer.toString(maxPlayers));
         maxPlayersField.setMaxLength(3);
-        maxPlayersField.setChangedListener((sPlayer) -> {
-            Integer i = null;
-            try {
-                i = Integer.parseInt(sPlayer);
-            } catch (NumberFormatException ignored) {
-            }
-            if (i != null && i <= 128 && i > 1) {
-                maxPlayers = i;
-                maxPlayerTextColor = 0xFFFFFF;
-            } else {
-                maxPlayers = 8;
-                maxPlayerTextColor = 0xFF0000;
-            }
-            maxPlayersField.setEditableColor(maxPlayerTextColor);
-        });
-        addDrawableChild(maxPlayersField);
+        maxPlayersField.setResponder(value->this.onMaxPlayersChange(value, maxPlayersField));
+        addRenderableWidget(maxPlayersField);
 
         // ONLINE MODE
-        onlineModeButton = CyclingButtonWidget.onOffBuilder(onlineMode)
-                .build(width / 2 - 155, height / 4 + 69, 150, 20, ONLINE_MODE_TEXT, (button, onlineMode) -> this.onlineMode = onlineMode);
-        addDrawableChild(onlineModeButton);
+        CycleButton<Boolean> onlineModeButton = CycleButton.onOffBuilder(onlineMode)
+                .create(width / 2 - 155, height / 4 + 69, 150, 20, ONLINE_MODE_TEXT, (button, onlineMode) -> this.onlineMode = onlineMode);
+        addRenderableWidget(onlineModeButton);
 
         // ENABLE PVP
-        enablePvpButton = CyclingButtonWidget.onOffBuilder(enablePvp)
-                .build(width / 2 + 5, height / 4 + 69, 150, 20, ENABLE_PVP_TEXT, (button, enablePvp) -> this.enablePvp = enablePvp);
-        addDrawableChild(enablePvpButton);
+        CycleButton<Boolean> enablePvpButton = CycleButton.onOffBuilder(enablePvp)
+                .create(width / 2 + 5, height / 4 + 69, 150, 20, ENABLE_PVP_TEXT, (button, enablePvp) -> this.enablePvp = enablePvp);
+        addRenderableWidget(enablePvpButton);
 
         // DONE
-        doneButton = ButtonWidget.builder(START_TEXT, button -> {
-            if (client.isIntegratedServerRunning() && server.isRemote()) { 
-                // UPDATE
-                this.client.setScreen(parent);
-
-                ((IntegratedServerAccessor) server).setForcedGameMode(gameMode);
-                server.getPlayerManager().setCheatsAllowed(allowCommands);
-                client.player.setClientPermissionLevel(server.getPermissionLevel(client.player.getGameProfile()));
-                for (ServerPlayerEntity serverPlayerEntity : server.getPlayerManager().getPlayerList()) {
-                    server.getCommandManager().sendCommandTree(serverPlayerEntity);
-                }
-                this.client.inGameHud.getChatHud().addMessage(CONFIG_SAVED_TEXT);
-            } else { 
-                // START
-                client.setScreen(null);
-                int i = lanPort > 0 && lanPort < 65536 ? lanPort : NetworkUtils.findLocalPort();
-                Text text2;
-                if (server.openToLan(this.gameMode, this.allowCommands, i))
-                    text2 = Text.translatable("commands.publish.started", i);
-                else
-                    text2 = Text.translatable("commands.publish.failed");
-                this.client.inGameHud.getChatHud().addMessage(text2);
-                this.client.updateWindowTitle();
-            }
-            server.setOnlineMode(onlineMode);
-            server.setPvpEnabled(enablePvp);
-            ((PlayerManagerAccessor)server.getPlayerManager()).setMaxPlayers(maxPlayers);
-        }).dimensions(width / 2 - 155, height / 4 + 104, 150, 20).build();
+        Button doneButton = Button.builder(START_TEXT, this::onDonePress).bounds(width / 2 - 155, height / 4 + 104, 150, 20).build();
         
-        this.addDrawableChild(doneButton);
+        this.addRenderableWidget(doneButton);
 
         // CANCEL
-        this.addDrawableChild(ButtonWidget.builder(ScreenTexts.CANCEL, button -> this.client.setScreen(this.parent)).dimensions(this.width / 2 + 5, height / 4 + 104, 150, 20).build());
+        this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, this::onCancel).bounds(this.width / 2 + 5, height / 4 + 104, 150, 20).build());
 
         // UPDATE PAGE
-        if (client.isIntegratedServerRunning() && server.isRemote()) {
-            doneButton.setMessage(ScreenTexts.DONE);
+        if (isOpenToLan(this.minecraft)) {
+            doneButton.setMessage(CommonComponents.GUI_DONE);
             portField.setEditable(false);
             displayTitle = CONFIG_TITLE_TEXT;
         }
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        renderBackground(matrices);
-        drawCenteredTextWithShadow(matrices, textRenderer, displayTitle, width / 2, Math.min(40, height / 4 - 30), 16777215);
-        drawCenteredTextWithShadow(matrices, textRenderer, OTHER_PLAYERS_TEXT, width / 2, Math.max(55, height / 4 - 5), 16777215);
-        drawCenteredTextWithShadow(matrices, this.textRenderer, SELECT_PORT_TEXT, width / 2 - 153 + (textRenderer.getWidth(SELECT_PORT_TEXT) / 2), height / 4 + 32, 16777215);
-        portField.render(matrices, mouseX, mouseY, delta);
-        drawCenteredTextWithShadow(matrices, this.textRenderer, MAX_PLAYERS_TEXT, width / 2 + 7 + (textRenderer.getWidth(MAX_PLAYERS_TEXT) / 2), height / 4 + 32, 16777215);
-        maxPlayersField.render(matrices, mouseX, mouseY, delta);
-        super.render(matrices, mouseX, mouseY, delta);
+    private <T extends IntegratedServer & IntegratedServerAccessor> void onDonePress(Button doneButton) {
+        Minecraft client = this.minecraft;
+        if (client == null) return;
+        MinecraftServer server = client.getSingleplayerServer();
+        if (!(server instanceof IntegratedServer && server instanceof IntegratedServerAccessor)) return;
+        @SuppressWarnings("unchecked") T integratedServer = (T) server;
+        if (!isSinglePlayerRunning(client)) {
+            this.clearScreen();
+            return;
+        }
+        if (isOpenToLan(client)) {
+            this.minecraft.setScreen(parent);
+            updateRunningServerSettings(integratedServer, this.gameMode, this.allowCommands);
+            addLocalChatMessage(CONFIG_SAVED_TEXT);
+        } else {
+            this.clearScreen();
+            openServerToLan(integratedServer);
+        }
+        finalizeRunningServerSettings(integratedServer, this.onlineMode, this.enablePvp, this.maxPlayers);
+
     }
+
+    private <T extends IntegratedServer & IntegratedServerAccessor> void openServerToLan(T integratedServer) {
+        Integer hostedPort = ServerSettingsUtil.openServerToLan(integratedServer.getClient(), integratedServer, lanPort, this.gameMode, this.allowCommands);
+        if (hostedPort != null) {
+            this.addLocalChatMessage(Component.translatable(OPEN_TO_LAN_SUCCESS_TRANSLATION_KEY, hostedPort));
+        }else {
+            this.addLocalChatMessage(UNABLE_TO_OPEN_TO_LAN);
+        }
+        integratedServer.getClient().updateTitle();
+    }
+
+    private void clearScreen() {
+        if (this.minecraft == null) return;
+        this.minecraft.setScreen(null);
+    }
+
+    private void copySettingsFromRunningServer(IntegratedServer server) {
+        gameMode = server.getForcedGameType();
+        allowCommands = server.getPlayerList().isAllowCommandsForAllPlayers();
+        onlineMode = server.usesAuthentication();
+        enablePvp = server.isPvpAllowed();
+        lanPort = server.getPort();
+        if (!validPort(lanPort)) lanPort = DEFAULT_PORT;
+        maxPlayers = server.getMaxPlayers();
+    }
+
+    private void addLocalChatMessage(Component text) {
+        Optional.ofNullable(this.minecraft)
+                .map(mc->{
+                    mc.getNarrator().sayNow(text);
+                    return mc.gui;
+                })
+                .map(Gui::getChat)
+                .ifPresent(chat->chat.addMessage(text));
+    }
+    private void onCancel(Button cancelButton) {
+        if (this.minecraft == null) return;
+        this.minecraft.setScreen(this.parent);
+    }
+
+    private void onMaxPlayersChange(String sMaxPlayers, EditBox maxPlayersField) {
+        Integer i = null;
+        try {
+            i = Integer.parseInt(sMaxPlayers);
+        } catch (NumberFormatException ignored) {
+        }
+        int maxPlayerTextColor = 0xFFFFFF;
+        if (validMaxPlayers(i)) {
+            this.maxPlayers = i;
+        } else {
+            this.maxPlayers = 8;
+            maxPlayerTextColor = 0xFF0000;
+        }
+        maxPlayersField.setTextColor(maxPlayerTextColor);
+    }
+
 }
