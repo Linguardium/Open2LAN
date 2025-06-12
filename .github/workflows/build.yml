@@ -26,8 +26,12 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew clean chiseledBuild
+      - name: gather artifacts
+        run: |
+          mkdir -p mods
+          cp -t mods/ versions/**/build/libs/*.jar
       - name: capture build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Artifacts
-          path: versions/**/build/libs/*.jar
+          path: mods/*.jar
