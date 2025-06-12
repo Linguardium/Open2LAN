@@ -32,7 +32,7 @@ modstitch {
     metadata {
         modId = "open2lan"
         modName = "Open2LAN"
-        modVersion = "0.3.0+rc1"
+        modVersion = "0.3.0+rc1" + "-" + stonecutter.current.component2()
         modGroup = "mod.linguardium.open2lan"
         modAuthor = "Linguardium"
 
